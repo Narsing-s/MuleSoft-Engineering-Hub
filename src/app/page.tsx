@@ -2,7 +2,6 @@ import Link from "next/link";
 import {supabaseServer} from "@/lib/supabase-server";
 import {starterArticles} from "@/lib/articles";
 import ArticleLibrary from "@/components/article-library";
-import MotionEffects from "@/components/motion-effects";
 export const dynamic="force-dynamic";
 export default async function Home(){
  let articles=starterArticles;
@@ -16,7 +15,6 @@ export default async function Home(){
   }
  }catch{}
  return <main className="site-shell">
-  <MotionEffects/>
   <div className="ambient ambient-one" aria-hidden="true"/><div className="ambient ambient-two" aria-hidden="true"/><div className="ambient-grid" aria-hidden="true"/>
   <nav className="nav wrap" data-reveal="down"><Link className="brand" href="/">MEH<span>.</span></Link><div><a href="#articles">Articles</a><Link href="/admin">Admin</Link></div></nav>
   <section className="hero wrap">
