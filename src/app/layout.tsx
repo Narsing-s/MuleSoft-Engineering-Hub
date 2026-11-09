@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import MotionEffects from "@/components/motion-effects";
 export const metadata: Metadata = {
  title: {default:"MuleSoft Engineering Hub",template:"%s | MuleSoft Engineering Hub"},
  description:"Practical MuleSoft engineering tutorials, DataWeave examples, API design, integration architecture and production support guides.",
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
  openGraph:{type:"website",title:"MuleSoft Engineering Hub",description:"Engineering Better Integrations, One API at a Time."},
 };
 export default function RootLayout({children}:{children:React.ReactNode}) {
- return <html lang="en"><body>{children}</body></html>;
+ return <html lang="en"><body><MotionEffects/>{children}</body></html>;
 }
