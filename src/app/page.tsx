@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {supabaseServer} from "@/lib/supabase-server";
 import {starterArticles} from "@/lib/articles";
+import ArticleLibrary from "@/components/article-library";
 export const dynamic="force-dynamic";
 export default async function Home(){
  let articles=starterArticles;
@@ -24,7 +25,7 @@ export default async function Home(){
   </section>
   <section id="articles" className="wrap articles">
    <div className="section-head"><div><div className="eyebrow">LEARN · BUILD · SHARE</div><h2>Engineering learning library</h2><p className="section-intro">Step-by-step tutorials, code walkthroughs, architecture diagrams and real-world operational guidance.</p></div><span className="count">{articles.length} ARTICLES</span></div>
-   <div className="grid">{articles.map((a,i)=><article className="article-card" key={a.id}><div className="card-top"><span>{a.category}</span><span>{String(i+1).padStart(2,"0")}</span></div><h3><Link href={`/articles/${a.slug}`}>{a.title}</Link></h3><p>{a.excerpt}</p><div className="card-bottom"><span>{a.reading_minutes} min read</span><Link href={`/articles/${a.slug}`}>Read tutorial ↗</Link></div></article>)}</div>
+   <ArticleLibrary articles={articles}/>
   </section>
   <footer className="wrap footer"><span>© 2026 MuleSoft Engineering Hub</span><span>Engineering Better Integrations, One API at a Time.</span></footer>
  </main>;
