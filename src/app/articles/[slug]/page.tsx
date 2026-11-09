@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {notFound} from "next/navigation";
 import {supabaseServer} from "@/lib/supabase-server";
-import {starterArticles} from "@/lib/articles";
+import {starterArticles, type Article} from "@/lib/articles";
 import type {ReactNode} from "react";
 export const dynamic="force-dynamic";
 function renderContent(source:string):ReactNode[]{
@@ -25,9 +25,9 @@ function renderContent(source:string):ReactNode[]{
  flush();if(code.length)out.push(<pre key={key++}><code>{code.join("\n")}</code></pre>);return out;
 }
 export default async function ArticlePage({params}:{params:Promise<{slug:string}>}){
- const {slug}=await params;let a:any=null;
+ const {slug}=await params;let a:Article|null=null;
  try{const sb=await supabaseServer();const {data}=await sb.from("articles").select("*").eq("slug",slug).eq("published",true).maybeSingle();a=data;}catch{}
- if(!a)a=starterArticles.find(x=>x.slug===slug);if(!a)notFound();
+ if(!a)a=starterArticles.find(x=>x.slug===slug)??null;if(!a)notFound();
  const minutes=Math.max(1,Math.ceil(a.content.split(/\s+/).length/220));
  return <main><nav className="nav wrap"><Link className="brand" href="/">MEH<span>.</span></Link><Link href="/">← All articles</Link></nav><article className="reader"><div className="eyebrow">{a.category} · {minutes} MIN READ</div><h1>{a.title}</h1><p className="lead">{a.excerpt}</p><div className="prose">{renderContent(a.content)}</div><Link className="back" href="/">← Back to the hub</Link></article><footer className="wrap footer"><span>© 2026 MuleSoft Engineering Hub</span><span>Independent technical learning publication</span></footer></main>;
 }
