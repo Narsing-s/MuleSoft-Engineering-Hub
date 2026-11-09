@@ -8,7 +8,23 @@ const owner=(process.env.NEXT_PUBLIC_ADMIN_EMAIL||"narsingbeesetti006@gmail.com"
 export default function Admin(){
  const [email,setEmail]=useState(owner),[user,setUser]=useState(""),[articles,setArticles]=useState<Article[]>([]),[form,setForm]=useState(blank),[editing,setEditing]=useState<string|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
  async function load(){const r=await fetch("/api/admin/articles");const j=await r.json();if(!r.ok)throw Error(j.error||"Unable to load");setArticles(j.articles);}
- useEffect(()=>{let live=true;supabaseBrowser().auth.getUser().then(async({data})=>{if(live&&data.user?.email?.toLowerCase()===owner){setUser(data.user.email);try{await load()}catch(e){setError(e instanceof Error?e.message:"Load failed")}}});return()=>{live=false}},[]);
+ useEffect(()=>{
+  let live=true;
+  async function checkSession(){
+   try{
+    const {data,error}=await supabaseBrowser().auth.getUser();
+    if(error)throw error;
+    if(live&&data.user?.email?.toLowerCase()===owner){
+     setUser(data.user.email);
+     try{await load()}catch(e){if(live)setError(e instanceof Error?e.message:"Unable to load articles")}
+    }
+   }catch(e){
+    if(live)setError(e instanceof Error?e.message:"Unable to initialize admin sign-in");
+   }
+  }
+  void checkSession();
+  return()=>{live=false};
+ },[]);
  async function login(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");try{const {error}=await supabaseBrowser().auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:location.origin+"/auth/callback?next=/admin"}});if(error)throw error;setMessage("Magic link sent. Open it on this device to sign in.");}catch(e){setError(e instanceof Error?e.message:"Unable to send link")}finally{setBusy(false)}}
  function edit(a:Article){setEditing(a.id);setForm({title:a.title,slug:a.slug,excerpt:a.excerpt,category:a.category,content:a.content,published:a.published});}
  function reset(){setEditing(null);setForm(blank);}
