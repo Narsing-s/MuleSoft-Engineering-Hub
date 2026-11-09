@@ -12,7 +12,7 @@ An independent, owner-managed technical publication for MuleSoft developers and 
 - Original lightweight SVG architecture diagrams stored in the repository; no image-generation service or paid image subscription is needed.
 - Code blocks, headings, lists, blockquotes, linked article contents and related tutorials.
 - Search across full article text, titles, excerpts and categories; category filters and pagination.
-- Owner-only Supabase magic-link login and publishing dashboard.
+- Owner-only password login with a signed, HTTP-only admin session and publishing dashboard.
 - Create, edit, publish, unpublish and delete articles.
 - Public visitors can read published articles; the admin route is excluded from crawler indexing.
 - Search metadata, Open Graph defaults, sitemap and responsive layouts.
@@ -26,7 +26,7 @@ Starter articles are included in the application, so the library is visible befo
 ## Stack
 
 - Next.js App Router + TypeScript
-- Supabase Auth + PostgreSQL + Row Level Security
+- Supabase PostgreSQL + Row Level Security
 - Responsive CSS and local SVG diagrams
 - GitHub Actions for lint/build validation
 
@@ -35,22 +35,23 @@ Starter articles are included in the application, so the library is visible befo
 1. Create a Supabase project: https://supabase.com/dashboard
 2. Open the Supabase SQL Editor and run `supabase/schema.sql`.
 3. In Supabase Project Settings → API, copy the Project URL and anon/publishable key.
-4. In Authentication → URL Configuration, set your deployed Site URL and add `https://YOUR-DOMAIN/auth/callback`. Add `http://localhost:3000/auth/callback` only for local development.
-5. Import this repository into Vercel and configure:
+4. Import this repository into Vercel and configure the following environment variables for Production (and Preview/Development if you use those environments):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `ADMIN_EMAIL=narsingbeesetti006@gmail.com`
-   - `NEXT_PUBLIC_ADMIN_EMAIL=narsingbeesetti006@gmail.com` (display prefill only; not a security control)
+   - `NEXT_PUBLIC_ADMIN_EMAIL=narsingbeesetti006@gmail.com` (login form prefill only)
+   - `ADMIN_PASSWORD` (a strong, unique password you choose; server-only)
+   - `ADMIN_SESSION_SECRET` (a random secret of at least 32 characters; server-only)
    - `NEXT_PUBLIC_SITE_URL=https://YOUR-DOMAIN` (sitemap and crawler metadata)
-6. Deploy and open `/admin`.
-7. Request a magic link using the owner email and open it on the same device/browser.
-8. Create an article, save it as a draft or publish it.
+5. Generate a session secret locally with `openssl rand -hex 32`. Never put the generated value in GitHub or a `NEXT_PUBLIC_` variable.
+6. Redeploy, open `/admin`, and sign in with the owner email and the password configured in Vercel. No email is sent.
+7. Create an article, save it as a draft or publish it.
 
 ## Owner and publishing model
 
-Only the configured owner can create, edit, publish, unpublish or delete articles. Public visitors can read published posts but cannot create or edit content. The configured owner email is `narsingbeesetti006@gmail.com`.
+Only the configured owner can create, edit, publish, unpublish or delete articles. Admin access uses `ADMIN_EMAIL` + `ADMIN_PASSWORD`; successful login creates a seven-day signed HTTP-only cookie. `ADMIN_SESSION_SECRET` signs the cookie and must remain server-only. Public visitors can read published posts but cannot create or edit content. The configured owner email is `narsingbeesetti006@gmail.com`. The admin login does not use Supabase Auth magic links or send email.
 
-If the owner email changes, update Vercel `ADMIN_EMAIL` and `NEXT_PUBLIC_ADMIN_EMAIL`, plus the owner email in `supabase/schema.sql` policies. Re-run the updated policy statements. Enable MFA on the owner email account. Never expose a Supabase service-role key in browser code or commit secrets to GitHub.
+If the owner email changes, update Vercel `ADMIN_EMAIL` and `NEXT_PUBLIC_ADMIN_EMAIL`, plus the owner email in `supabase/schema.sql` policies. Re-run the updated policy statements. Rotate `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET` periodically. Never expose a Supabase service-role key in browser code or commit secrets to GitHub.
 
 ## Article authoring
 
