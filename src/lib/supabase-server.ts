@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 export async function supabaseServer() {
@@ -31,6 +32,17 @@ export async function supabaseServer() {
 export async function requireOwner() {
   const { hasAdminSession } = await import("@/lib/admin-session");
   if (!(await hasAdminSession())) return null;
-  const supabase = await supabaseServer();
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRoleKey) {
+    throw new Error("Server-side Supabase service role configuration is missing.");
+  }
+
+  // This client is created only after the signed owner session is verified.
+  // The service-role key must never use a NEXT_PUBLIC_ prefix.
+  const supabase = createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
   return { supabase, user: { email: process.env.ADMIN_EMAIL || "narsingbeesetti006@gmail.com" } };
 }
