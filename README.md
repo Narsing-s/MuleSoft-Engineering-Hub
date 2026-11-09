@@ -7,7 +7,8 @@ An independent, owner-managed technical publication for MuleSoft developers and 
 ## What's included
 
 - Responsive public article library and long-form reading pages.
-- **15 starter tutorials** covering Mule 4, DataWeave 2.0, API-led connectivity, RAML/APIKit, MUnit, CloudHub 2.0, IBM MQ/MFT, performance and production support.
+- **43 built-in starter tutorials** across Mule 4 fundamentals, DataWeave, API design and management, security, integration patterns, testing, DevOps, deployment, production support and interview preparation.
+- Search by title, excerpt or category; filter by topic and browse nine articles per page. The article count is generated from the full library.
 - Original lightweight SVG architecture diagrams stored in the repository; no image-generation service or paid image subscription is needed.
 - Code blocks, headings, lists, blockquotes and embedded local SVG diagrams.
 - Owner-only Supabase magic-link login and publishing dashboard.
@@ -17,21 +18,7 @@ An independent, owner-managed technical publication for MuleSoft developers and 
 
 ## Starter article topics
 
-1. Database-to-SFTP integration using Mule 4
-2. Seven practical DataWeave 2.0 techniques
-3. Idempotency and duplicate prevention
-4. Mule 4 event anatomy
-5. Scheduler vs HTTP Listener
-6. Error handling: On Error Continue vs Propagate
-7. API-led connectivity: System, Process and Experience
-8. RAML and APIKit
-9. MUnit testing and mocking
-10. CloudHub 2.0 deployment and Runtime Manager
-11. Production support incident checklist
-12. DataWeave null handling, types and dates
-13. HTTP Request timeouts and retries
-14. IBM MQ and managed file transfer
-15. Streaming, batch and database connection pooling
+The 43 tutorials include end-to-end database-to-SFTP integration, DataWeave functions and type handling, idempotency, Mule event anatomy, Scheduler and HTTP Listener, error handling, API-led connectivity, RAML/APIKit, MUnit, CloudHub 2.0, IBM MQ/MFT, performance and streaming, API Manager autodiscovery, secure properties, pagination, Object Store, batch jobs, reliable SFTP delivery, OAuth 2.0/JWT, API versioning, CI/CD, correlation IDs, deployment troubleshooting and scenario-based interviews.
 
 Starter articles are included in the application, so the library is visible before Supabase is configured. Published Supabase articles appear first while starter tutorials remain available. New content created in the admin dashboard is stored in Supabase.
 
