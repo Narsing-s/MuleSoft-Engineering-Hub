@@ -12,7 +12,7 @@ function renderContent(source:string):ReactNode[]{
   if(line.trim().startsWith("```")){flush();if(inCode){out.push(<pre key={key++}><code>{code.join("\n")}</code></pre>);code=[];}inCode=!inCode;continue;}
   if(inCode){code.push(line);continue;}
   if(line.startsWith("- ")){if(list.length&&listType!=="ul")flush();listType="ul";list.push(line.slice(2));continue;}
-  const ordered=line.match(/^\\d+\\.\\s+(.*)$/);if(ordered){if(list.length&&listType!=="ol")flush();listType="ol";list.push(ordered[1]);continue;}
+  const ordered=line.match(/^\d+\.\s+(.*)$/);if(ordered){if(list.length&&listType!=="ol")flush();listType="ol";list.push(ordered[1]);continue;}
   flush();if(!line.trim())continue;
   const imageMatch=line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
   if(imageMatch){out.push(<figure className="article-figure" key={key++}><Image src={imageMatch[2]} alt={imageMatch[1]} width={1100} height={430} unoptimized/><figcaption>{imageMatch[1]}</figcaption></figure>);continue;}
