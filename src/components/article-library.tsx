@@ -3,7 +3,7 @@
 import {useMemo,useState} from "react";
 import Link from "next/link";
 
-type ArticleCardData={id:string;title:string;slug:string;excerpt:string;category:string;reading_minutes:number};
+type ArticleCardData={id:string;title:string;slug:string;excerpt:string;category:string;content:string;reading_minutes:number};
 
 export default function ArticleLibrary({articles}:{articles:ArticleCardData[]}){
  const [query,setQuery]=useState("");
@@ -13,7 +13,7 @@ export default function ArticleLibrary({articles}:{articles:ArticleCardData[]}){
  const categories=useMemo(()=>["All categories",...Array.from(new Set(articles.map(a=>a.category))).sort()], [articles]);
  const filtered=useMemo(()=>{
   const q=query.trim().toLowerCase();
-  return articles.filter(a=>(category==="All categories"||a.category===category)&&(!q||[a.title,a.excerpt,a.category].some(v=>v.toLowerCase().includes(q))));
+  return articles.filter(a=>(category==="All categories"||a.category===category)&&(!q||[a.title,a.excerpt,a.category,a.content].some(v=>v.toLowerCase().includes(q))));
  },[articles,category,query]);
  const pages=Math.max(1,Math.ceil(filtered.length/pageSize));
  const current=Math.min(page,pages);
