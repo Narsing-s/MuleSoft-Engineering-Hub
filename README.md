@@ -8,9 +8,10 @@ An independent, owner-managed technical publication for MuleSoft developers and 
 
 - Responsive public article library and long-form reading pages.
 - **43 built-in starter tutorials** across Mule 4 fundamentals, DataWeave, API design and management, security, integration patterns, testing, DevOps, deployment, production support and interview preparation.
-- Search by title, excerpt or category; filter by topic and browse nine articles per page. The article count is generated from the full library.
+- Search across tutorial content, titles and excerpts; filter by topic and browse nine articles per page. Long-form tutorials include a linked table of contents and related reading suggestions. The article count is generated from the full library.
 - Original lightweight SVG architecture diagrams stored in the repository; no image-generation service or paid image subscription is needed.
-- Code blocks, headings, lists, blockquotes and embedded local SVG diagrams.
+- Code blocks, headings, lists, blockquotes, linked article contents and related tutorials.
+- Search across full article text, titles, excerpts and categories; category filters and pagination.
 - Owner-only Supabase magic-link login and publishing dashboard.
 - Create, edit, publish, unpublish and delete articles.
 - Public visitors can read published articles; the admin route is excluded from crawler indexing.
