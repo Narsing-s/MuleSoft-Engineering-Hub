@@ -6,12 +6,13 @@ import {starterArticles} from "@/lib/articles";
 import type {ReactNode} from "react";
 export const dynamic="force-dynamic";
 function renderContent(source:string):ReactNode[]{
- const lines=source.split(/\r?\n/);const out:ReactNode[]=[];let code:string[]=[];let inCode=false;let list:string[]=[];let key=0;
- const flush=()=>{if(list.length){out.push(<ul key={key++}>{list.map((v,i)=><li key={i}>{v}</li>)}</ul>);list=[];}};
+ const lines=source.split(/\r?\n/);const out:ReactNode[]=[];let code:string[]=[];let inCode=false;let list:string[]=[];let listType:"ul"|"ol"="ul";let key=0;
+ const flush=()=>{if(list.length){const items=list.map((v,i)=><li key={i}>{v}</li>);out.push(listType==="ol"?<ol key={key++}>{items}</ol>:<ul key={key++}>{items}</ul>);list=[];}};
  for(const line of lines){
   if(line.trim().startsWith("```")){flush();if(inCode){out.push(<pre key={key++}><code>{code.join("\n")}</code></pre>);code=[];}inCode=!inCode;continue;}
   if(inCode){code.push(line);continue;}
-  if(line.startsWith("- ")){list.push(line.slice(2));continue;}
+  if(line.startsWith("- ")){if(list.length&&listType!=="ul")flush();listType="ul";list.push(line.slice(2));continue;}
+  const ordered=line.match(/^\\d+\\.\\s+(.*)$/);if(ordered){if(list.length&&listType!=="ol")flush();listType="ol";list.push(ordered[1]);continue;}
   flush();if(!line.trim())continue;
   const imageMatch=line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
   if(imageMatch){out.push(<figure className="article-figure" key={key++}><Image src={imageMatch[2]} alt={imageMatch[1]} width={1100} height={430} unoptimized/><figcaption>{imageMatch[1]}</figcaption></figure>);continue;}
