@@ -41,7 +41,7 @@ The exact limit syntax and parameter binding depend on your database and connect
 
 ```dw
 %dw 2.0
-output text/csv header=true, separator=","
+output application/csv header=true, separator=","
 ---
 (payload map (row) -> {
   customerId: row.customer_id as String,
