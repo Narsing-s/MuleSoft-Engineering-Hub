@@ -6,7 +6,7 @@ import {starterArticles, type Article} from "@/lib/articles";
 import type {ReactNode} from "react";
 export const dynamic="force-dynamic";
 
-function slugHeading(value:string){return value.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g)||"section";}
+function slugHeading(value:string){return value.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"section";}
 function collectHeadings(source:string){
  const counts=new Map<string,number>();
  return source.split(/\r?\n/).flatMap(line=>{
