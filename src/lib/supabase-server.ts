@@ -28,20 +28,9 @@ export async function supabaseServer() {
   });
 }
 
-export const OWNER_EMAIL = (
-  process.env.ADMIN_EMAIL || "narsingbeesetti006@gmail.com"
-).toLowerCase();
-
 export async function requireOwner() {
+  const { hasAdminSession } = await import("@/lib/admin-session");
+  if (!(await hasAdminSession())) return null;
   const supabase = await supabaseServer();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user || user.email?.toLowerCase() !== OWNER_EMAIL) {
-    return null;
-  }
-
-  return { supabase, user };
+  return { supabase, user: { email: process.env.ADMIN_EMAIL || "narsingbeesetti006@gmail.com" } };
 }
