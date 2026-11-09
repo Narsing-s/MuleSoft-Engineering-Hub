@@ -1,36 +1,42 @@
 # MuleSoft Engineering Hub
 
-An admin-only technical publishing website for MuleSoft tutorials, DataWeave examples, API design and integration engineering.
+Independent owner-managed technical publication. Tagline: **Engineering Better Integrations, One API at a Time.**
 
-## Stack
-- Next.js App Router + TypeScript
-- Supabase Auth (email magic link) and Postgres
-- Responsive custom UI
-- Deployable to Vercel or another Node.js host
+## Features
+- Responsive article library and article reading pages
+- Owner-only Supabase magic-link authentication
+- Create, edit, publish, unpublish and delete articles
+- Public visitors can read published articles only
+- Markdown-style headings, lists and fenced code blocks
+- Row Level Security plus server-side owner checks
 
-## Local setup
-1. Install Node.js 20+.
-2. Run `npm install`.
-3. Copy `.env.example` to `.env.local`.
-4. Create a Supabase project and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-5. In Supabase Authentication, enable email sign-in and configure the site URL and redirect URL (`http://localhost:3000/admin`).
-6. Run `supabase/schema.sql` in the Supabase SQL Editor.
-7. Run `npm run dev`.
+## Setup
+1. Create a Supabase project: https://supabase.com/dashboard
+2. In SQL Editor, run `supabase/schema.sql`.
+3. In Project Settings → API, copy the Project URL and anon/publishable key.
+4. In Authentication → URL Configuration, set Site URL to your deployed domain and add `https://YOUR-DOMAIN/auth/callback` (also add `http://localhost:3000/auth/callback` for local work).
+5. Import this GitHub repo into Vercel and add:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `ADMIN_EMAIL=narsingbeesetti006@gmail.com`
+   - `NEXT_PUBLIC_ADMIN_EMAIL=narsingbeesetti006@gmail.com` (prefill only; not a security control)
+6. Deploy. Open `/admin`, request a magic link and open it on the same device/browser.
+7. Create an article, save as draft or publish immediately.
 
-## Admin security
-- The admin sign-in screen sends a Supabase magic link.
-- The SQL policies restrict write access to the configured owner email.
-- Set the owner email in the SQL policies to the intended account before production.
-- Do not expose a Supabase service-role key in browser code.
-- Add your production domain to Supabase Auth redirect URLs.
-- The current UI is an MVP shell: article pages use local starter content. Connect the admin editor and public listing to the `articles` table before treating this as a production CMS.
+## Security
+- API routes verify the Supabase user session and enforce the owner email on the server.
+- RLS independently restricts insert/update/delete to the owner email.
+- Anonymous users can select published articles only; authenticated owner can also select drafts.
+- Never add a Supabase service-role key to this app or commit secrets.
+- Keep the SQL policy email aligned with `ADMIN_EMAIL`. Enable MFA on the owner inbox.
 
-## Deploy
-Import the repository into Vercel or another Next.js host and configure the two public Supabase environment variables. Configure the Supabase auth redirect URL to the deployed domain. Use a custom domain only if desired.
+## Content
+Write with `#`, `##`, `###`, `-` list items and triple-backtick code fences. Review technical examples before publishing. Never include client confidential information, credentials or production data.
 
-## Included starter content
-1. Database-to-SFTP integration with Mule 4
-2. Seven practical DataWeave 2.0 techniques
-3. Idempotency in MuleSoft
-
-Review all technical examples against your Mule runtime and project conventions before publishing. Never include employer/client confidential information, credentials or production data.
+## Local development
+Requires Node.js 20+:
+```sh
+npm install
+cp .env.example .env.local
+npm run dev
+```

@@ -1,26 +1,18 @@
--- Run in Supabase SQL Editor.
-create table if not exists public.articles (
- id uuid primary key default gen_random_uuid(),
- title text not null,
- slug text unique not null,
- excerpt text not null,
- category text not null,
- content text not null,
- published boolean not null default false,
- published_at timestamptz,
- created_at timestamptz not null default now(),
- updated_at timestamptz not null default now()
-);
+create extension if not exists pgcrypto;
+create table if not exists public.articles(id uuid primary key default gen_random_uuid(),title text not null,slug text unique not null,excerpt text not null default '',category text not null default 'Mule 4',content text not null,published boolean not null default false,published_at timestamptz,created_at timestamptz not null default now(),updated_at timestamptz not null default now());
 alter table public.articles enable row level security;
--- Public can read published articles only.
-create policy "Published articles are public" on public.articles
- for select using (published = true);
--- Authenticated owner can manage records; restrict allowed user in production
--- with a Supabase Auth user allowlist / JWT claim policy before enabling writes.
-create policy "Authenticated users can insert" on public.articles
- for insert to authenticated with check (auth.jwt()->>'email' = 'narsingbeesetti006@gmail.com');
-create policy "Authenticated owner can update" on public.articles
- for update to authenticated using (auth.jwt()->>'email' = 'narsingbeesetti006@gmail.com')
- with check (auth.jwt()->>'email' = 'narsingbeesetti006@gmail.com');
-create policy "Authenticated owner can delete" on public.articles
- for delete to authenticated using (auth.jwt()->>'email' = 'narsingbeesetti006@gmail.com');
+create index if not exists articles_published_date_idx on public.articles(published,published_at desc);
+drop policy if exists "Published articles are public" on public.articles;
+drop policy if exists "Authenticated users can insert" on public.articles;
+drop policy if exists "Authenticated owner can update" on public.articles;
+drop policy if exists "Authenticated owner can delete" on public.articles;
+drop policy if exists "Owner can insert articles" on public.articles;
+drop policy if exists "Owner can update articles" on public.articles;
+drop policy if exists "Owner can delete articles" on public.articles;
+create policy "Published articles are public" on public.articles for select to anon,authenticated using(published=true or lower(auth.jwt()->>'email')='narsingbeesetti006@gmail.com');
+create policy "Owner can insert articles" on public.articles for insert to authenticated with check(lower(auth.jwt()->>'email')='narsingbeesetti006@gmail.com');
+create policy "Owner can update articles" on public.articles for update to authenticated using(lower(auth.jwt()->>'email')='narsingbeesetti006@gmail.com') with check(lower(auth.jwt()->>'email')='narsingbeesetti006@gmail.com');
+create policy "Owner can delete articles" on public.articles for delete to authenticated using(lower(auth.jwt()->>'email')='narsingbeesetti006@gmail.com');
+create or replace function public.set_updated_at() returns trigger language plpgsql as $$ begin new.updated_at=now();return new;end; $$;
+drop trigger if exists set_articles_updated_at on public.articles;
+create trigger set_articles_updated_at before update on public.articles for each row execute function public.set_updated_at();
