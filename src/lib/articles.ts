@@ -255,6 +255,166 @@ export const starterArticles: Article[] = [
     "content": "# MuleSoft Interview Preparation: 20 Scenario-Based Questions with Answer Frameworks\n\n# Scenario-based MuleSoft interview preparation\n\nStrong interview answers explain the design choice, failure mode and operational trade-off. Use a real project only when you can discuss it without revealing confidential information.\n\n## 1. What if SFTP is unavailable?\n\nExplain bounded retries for transient failures, alerting, durable work state and replay after recovery. Confirm whether a partial file exists before resending.\n\n## 2. How do you prevent duplicate records?\n\nUse a stable business key, a durable uniqueness constraint or processing ledger, and target-side idempotency where possible. Explain the timeout-after-success scenario.\n\n## 3. How do you process 100,000 records?\n\nDiscuss pagination or streaming, batch processing where suitable, bounded concurrency, database indexes, memory limits and reconciliation. Avoid loading everything into memory.\n\n## 4. How do you troubleshoot an API 500?\n\nStart with impact and timestamp, trace a correlation ID, inspect the first relevant exception, check dependency health and compare a successful transaction.\n\n## 5. How do you test a flow?\n\nDescribe happy path, invalid input, connector mocks, timeout, retry exhaustion, error propagation and assertions with MUnit.\n\n## 6. What is the difference between Continue and Propagate?\n\nExplain how each changes the parent flow's error outcome and give a concrete use case.\n\n## 7. How do you secure credentials?\n\nDiscuss secure properties or approved secret management, environment separation, least privilege and rotation.\n\n## 8. How do you deploy safely?\n\nExplain build once, environment-specific configuration, approvals, smoke tests, monitoring and rollback.\n\n## A useful answer structure\n\nUse Situation, Design, Failure handling, Observability and Result. State what you personally implemented, what was handled by another team and what you learned. Never invent metrics or claim ownership of work you did not perform."
   },
   {
+    id: "16",
+    title: "Mule 4 Connectors: Database, HTTP and SFTP in One Integration",
+    slug: "mule4-database-http-sftp-connectors",
+    excerpt: "Connect source databases, REST services and file endpoints with clear connector responsibilities.",
+    category: "Connectors & Integration",
+    published_at: "2026-11-10",
+    reading_minutes: 7,
+    content: "# Mule 4 connectors: Database, HTTP and SFTP\n\nMule connectors provide the boundary between a flow and an external system. A reliable integration treats each connector as an independent dependency with its own configuration, timeout, credentials and failure modes.\n\n## Database connector\n\nUse Database Select for reads and Insert, Update or Delete for controlled writes. Parameterize SQL values, configure a bounded connection pool and select only the columns required by the process. For large result sets, evaluate streaming and pagination rather than materializing everything in memory.\n\n```xml\n<db:select config-ref=\"Database_Config\">\n  <db:sql><![CDATA[SELECT id, status FROM orders WHERE status = :status]]></db:sql>\n  <db:input-parameters><![CDATA[#[{status: 'READY'}]]]></db:input-parameters>\n</db:select>\n```\n\n## HTTP Request connector\n\nUse HTTP Request to call a downstream API. Configure the protocol, host, base path, response timeout and TLS settings explicitly. Build headers from secure configuration and handle non-success status codes according to the API contract.\n\n## SFTP connector\n\nUse SFTP Read or List for inbound files and SFTP Write for outbound delivery. Validate remote paths, file naming rules, host keys and permissions. A successful write should be followed by the agreed acknowledgement or reconciliation step.\n\n## Production checklist\n\n- Externalize endpoints and credentials.\n- Set connection and response timeouts.\n- Classify retryable versus permanent errors.\n- Avoid logging secrets or full sensitive payloads.\n- Test unavailable dependencies and recovery behavior.\n\nThe connector performs the technical operation; the flow must still own business validation, idempotency and end-to-end completion."
+  },
+  {
+    id: "17",
+    title: "DataWeave Null Handling: Default, If and Safe Mapping",
+    slug: "dataweave-null-handling-default-if-safe-mapping",
+    excerpt: "Handle absent fields, explicit nulls, empty strings and invalid values without surprising transformations.",
+    category: "DataWeave",
+    published_at: "2026-11-10",
+    reading_minutes: 7,
+    content: "# DataWeave null handling: default, if and safe mapping\n\nNull handling is a data-contract decision. A missing field, an explicit null and an empty string can mean different things to a downstream application. Decide which states are allowed before writing a transformation.\n\n## Use default for an acceptable fallback\n\n```dw\n%dw 2.0\noutput application/json\n---\n{\n  email: payload.email default null,\n  country: payload.country default \"UNKNOWN\"\n}\n```\n\nUse a fallback only when it is valid for the target. Do not replace required business data with a fake value merely to make a transformation succeed.\n\n## Distinguish empty from missing\n\n```dw\n%dw 2.0\noutput application/json\nvar rawName = payload.name default \"\"\n---\n{\n  name: if (isEmpty(trim(rawName))) null else trim(rawName)\n}\n```\n\nThe exact coercion should match the incoming schema. Validate types before calling string functions on values that may be numbers, arrays or objects.\n\n## Conditional field creation\n\n```dw\n%dw 2.0\noutput application/json\n---\n{\n  customerId: payload.customerId,\n  (\"phone\": payload.phone) if (!isEmpty(payload.phone default \"\"))\n}\n```\n\nConditional keys are useful when the target contract says an optional property should be omitted rather than sent as null.\n\n## Test edge cases\n\nTest missing keys, explicit null, empty strings, whitespace, zero, false, empty arrays and unexpected types. Confirm the output against the target schema. Use validation errors for invalid required values instead of silently masking them."
+  },
+  {
+    id: "18",
+    title: "MuleSoft API Manager: Policies, SLA Tiers and Governance",
+    slug: "mulesoft-api-manager-policies-sla-governance",
+    excerpt: "Understand how API Manager applies security, traffic controls and governance to managed APIs.",
+    category: "API Management",
+    published_at: "2026-11-10",
+    reading_minutes: 8,
+    content: "# MuleSoft API Manager: policies, SLA tiers and governance\n\nAPI Manager helps teams manage API instances and apply policies to control access and traffic. It complements implementation logic; it does not replace secure application design or backend authorization.\n\n## Register and manage an API\n\nPublish the API specification to Exchange, create or identify the API instance in API Manager, and configure the runtime autodiscovery relationship where applicable. Verify that the deployed application is associated with the intended API instance and environment.\n\n## Apply policies deliberately\n\nCommon controls include client identification, OAuth or JWT-based access controls, rate limiting and spike control. Choose policies from the actual security and traffic requirements. A rate limit that is too restrictive can cause legitimate client failures; a limit that is too broad may not protect the backend.\n\n## SLA-based access\n\nWhen plans and contracts are used, define tiers with clear request limits and approval rules. Communicate quota behavior, reset windows and error responses to consumers. Test both allowed and over-limit requests.\n\n## Operational practices\n\n- Separate development, test and production API instances.\n- Restrict who can change production policies.\n- Review policy order and compatibility.\n- Monitor rejected requests and quota consumption.\n- Document emergency rollback and policy-disable procedures.\n\nA managed API is production-ready when its contract, runtime, access policy, consumer onboarding and monitoring all agree."
+  },
+  {
+    id: "19",
+    title: "MuleSoft Object Store: Use Cases, TTL and Persistence",
+    slug: "mulesoft-object-store-ttl-persistence",
+    excerpt: "Choose Object Store for lightweight state, deduplication and token caching while understanding its limits.",
+    category: "Mule 4",
+    published_at: "2026-11-10",
+    reading_minutes: 7,
+    content: "# MuleSoft Object Store: use cases, TTL and persistence\n\nObject Store provides key-value storage for Mule applications. It is useful for state that flows need to share, such as cached tokens, small reference data and duplicate-detection markers. Choose the store configuration based on the required lifetime and deployment topology.\n\n## Select a suitable use case\n\nA short-lived cache can reduce repeated calls for reference data. A token cache can avoid requesting a new access token for every API call. A deduplication key can help identify repeated messages, provided its retention and concurrency behavior match the business requirement.\n\n## Configure expiration\n\nSet a time-to-live that reflects how long a value remains valid. Expire cached data before the source credential or business reference becomes invalid. Define what happens when a key is missing or the store is unavailable.\n\n## Understand persistence and scope\n\nDo not assume an in-memory value survives an application restart or is shared across replicas. Confirm the Object Store implementation, persistence settings and runtime behavior for the deployment target. For critical financial or order-processing idempotency, a durable database ledger with a uniqueness constraint is often more appropriate.\n\n## Design checklist\n\n- Use stable, non-sensitive keys.\n- Define TTL and cleanup behavior.\n- Handle concurrent access.\n- Avoid storing secrets unless the storage and access model is approved.\n- Test restart, redeploy and multi-replica scenarios.\n\nObject Store is a useful building block, but it is not automatically a substitute for a transactional system of record."
+  },
+  {
+    id: "20",
+    title: "MuleSoft Batch Processing: Records, Steps and Error Recovery",
+    slug: "mulesoft-batch-processing-records-error-recovery",
+    excerpt: "Structure high-volume record processing with bounded resources, record-level outcomes and reconciliation.",
+    category: "Mule 4",
+    published_at: "2026-11-10",
+    reading_minutes: 8,
+    content: "# MuleSoft batch processing: records, steps and recovery\n\nBatch processing is designed for workloads where many records can be handled independently. A robust batch job makes input selection, record outcomes and recovery visible.\n\n## Prepare a bounded input\n\nSelect records using a stable ordering and a defined batch size. Avoid loading an unbounded table into memory. Where appropriate, use database pagination, streaming or a source that supports repeatable reads. Capture a run ID and the source range before processing.\n\n## Process each record\n\nValidate required fields, transform the record and call the target. Decide whether a failure should reject one record or fail the whole business batch. Persist enough context to replay a failed record without re-reading or duplicating successful work.\n\n## Tune concurrency carefully\n\nChoose block size and concurrency based on measured database capacity, target rate limits and runtime resources. More concurrency can increase lock contention, connection-pool pressure and downstream throttling.\n\n## Recovery and reconciliation\n\nTrack received, succeeded, rejected and retryable counts. Use idempotency keys where a timeout may occur after the target completed the operation. Compare source counts with target acknowledgements and alert on mismatches.\n\n## Test scenarios\n\nTest empty input, malformed data, target outage, restart during processing, duplicate delivery and partial completion. A batch design is complete only when operators can explain what succeeded, what failed and how to resume safely."
+  },
+  {
+    id: "21",
+    title: "MuleSoft APIKit Router: RAML Routing and Validation",
+    slug: "mulesoft-apikit-router-raml-routing-validation",
+    excerpt: "See how APIKit connects a RAML contract to resource-method flows and request validation.",
+    category: "API Design",
+    published_at: "2026-11-10",
+    reading_minutes: 7,
+    content: "# MuleSoft APIKit router: RAML routing and validation\n\nAPIKit uses an API specification to route incoming requests to implementation flows. It encourages contract-first development, where the resource, method, parameters and response shapes are agreed before backend logic is written.\n\n## Define the contract\n\nCreate RAML resources and methods with explicit request and response types. Include examples, required query parameters and error responses. Keep internal database fields out of the public contract unless they are intentionally part of the API.\n\n## Generate routing flows\n\nImport the RAML into Anypoint Studio and scaffold the APIKit router and resource-method flows. The generated flows provide routing structure; they do not implement the business operation for you.\n\n## Implement and validate\n\nAdd validation and business logic in the relevant method flow. Map backend results to the documented response type. Handle not-found, invalid input and dependency errors with consistent status codes and error bodies.\n\n## Test the contract\n\nCall each resource and method with valid and invalid examples. Verify path parameters, query parameters, media types, response codes and schema validation. Include tests for unknown resources and unsupported methods.\n\nAPIKit helps enforce the contract at the routing boundary, while implementation flows remain responsible for business rules, security and dependency handling."
+  },
+  {
+    id: "22",
+    title: "MuleSoft Secure Properties: Protect Application Secrets",
+    slug: "mulesoft-secure-properties-protect-secrets",
+    excerpt: "Keep passwords, tokens and private keys out of source control and logs using secure configuration.",
+    category: "Security",
+    published_at: "2026-11-10",
+    reading_minutes: 7,
+    content: "# MuleSoft secure properties: protect application secrets\n\nCredentials should never be committed as plain text in a repository or copied into application logs. Mule applications should separate ordinary configuration from secrets and use the approved secure configuration mechanism for the deployment environment.\n\n## Identify sensitive values\n\nTreat database passwords, API client secrets, private keys, signing material and access tokens as secrets. Keep endpoints, timeouts and feature switches in ordinary environment configuration when they are not confidential.\n\n## Encrypt and inject securely\n\nUse the Secure Configuration Properties module for encrypted property values where appropriate, and supply the decryption key through a protected runtime setting. For managed deployments, use the platform's supported secret or secure environment-variable mechanism. Never store the decryption key beside the encrypted file.\n\n## Apply least privilege\n\nUse separate credentials for development, test and production. Grant only the permissions required by the application. Rotate secrets according to policy and plan how applications receive the replacement without exposing it in build output.\n\n## Verify the controls\n\nSearch repository history and pipeline logs for accidental secrets. Confirm that error messages do not print configuration values. Test secret rotation and failed decryption in a non-production environment.\n\nEncryption is only one layer: access control, rotation, auditability and safe operational handling are equally important."
+  },
+  {
+    id: "23",
+    title: "MuleSoft CloudHub 2.0 Deployment: Environments and Runtime Settings",
+    slug: "mulesoft-cloudhub2-deployment-environments-runtime-settings",
+    excerpt: "Prepare a CloudHub 2.0 release with environment-specific properties, replicas and health verification.",
+    category: "DevOps & Deployment",
+    published_at: "2026-11-10",
+    reading_minutes: 8,
+    content: "# MuleSoft CloudHub 2.0 deployment: runtime settings\n\nA deployment is more than uploading an application archive. The runtime configuration, environment, network access, secrets and operational checks must all be correct for the application to serve production traffic.\n\n## Prepare the artifact\n\nBuild and test a versioned artifact in CI. Record the source commit and artifact version. Avoid rebuilding different binaries for each environment when a build-once, promote-the-same-artifact process is available.\n\n## Configure the target environment\n\nSelect the correct Anypoint environment and runtime version. Configure replicas, resource allocation, properties, secure values, logging and required connectivity. Confirm that private endpoints and firewall rules are reachable from the target runtime.\n\n## Deploy safely\n\nUse least-privilege deployment credentials and an approved release process. Avoid overlapping deployments. Keep the previous known-good artifact available for rollback and record who approved the production change.\n\n## Verify after deployment\n\nCheck deployment state, application logs, health endpoints and dependency connectivity. Run a safe business-path smoke test. A green deployment status alone does not prove that database, messaging or downstream operations work.\n\nCapture commit SHA, environment, artifact version, deployment ID, test evidence and timestamp as release evidence."
+  },
+  {
+    id: "24",
+    title: "MuleSoft Runtime Manager: Logs, Monitoring and Restart Decisions",
+    slug: "mulesoft-runtime-manager-logs-monitoring-restarts",
+    excerpt: "Use Runtime Manager evidence to diagnose application health before restarting or redeploying.",
+    category: "Production Support",
+    published_at: "2026-11-10",
+    reading_minutes: 7,
+    content: "# MuleSoft Runtime Manager: logs, monitoring and restart decisions\n\nRuntime Manager provides operational visibility into deployed Mule applications. During an incident, use evidence to identify whether the issue is application logic, a dependency, capacity or the runtime itself.\n\n## Start with impact and health\n\nConfirm the affected application, environment, region and time window. Check application state, worker or replica health, recent deployment events and platform alerts. Compare the failing period with a known-good period.\n\n## Follow the correlation ID\n\nSearch logs using the correlation ID or another stable request reference. Trace the event through the relevant flow and connector calls. Look for the first meaningful failure rather than focusing only on the final propagated exception.\n\n## Decide whether to restart\n\nA restart can temporarily restore a process but may hide the underlying cause or interrupt in-flight work. Before restarting, check whether the application is processing messages, running a batch or holding critical state. Follow the incident runbook and capture evidence first.\n\n## Record a useful incident timeline\n\nDocument symptom, start time, affected operations, error type, dependency status, recent changes, mitigation and validation. After recovery, identify a preventive action such as a timeout correction, alert, test or capacity adjustment.\n\nRestart only when it is an approved mitigation supported by the evidence, not as the default first diagnostic step."
+  },
+  {
+    id: "25",
+    title: "MuleSoft MFT and IBM MQ: Reliable Messaging Integration",
+    slug: "mulesoft-mft-ibm-mq-reliable-messaging",
+    excerpt: "Compare file transfer and queue-based messaging patterns and design acknowledgements and replay.",
+    category: "Connectors & Integration",
+    published_at: "2026-11-10",
+    reading_minutes: 8,
+    content: "# MuleSoft MFT and IBM MQ: reliable integration patterns\n\nFile transfer and messaging both move data between systems, but they provide different delivery models. Choose based on the receiving system's contract, latency needs, payload size and recovery requirements.\n\n## Managed file transfer\n\nMFT is useful when partners exchange scheduled files, bulk records or fixed-layout payloads. Agree on naming, encryption, checksums, acknowledgement files, retention and duplicate-file handling. Treat the file and its acknowledgement as part of one business protocol.\n\n## IBM MQ messaging\n\nQueues decouple producers and consumers and can buffer work when a consumer is temporarily unavailable. Configure queue names, connection security, message expiry, persistence, backout handling and dead-letter routing according to the enterprise standard.\n\n## Delivery guarantees\n\nA successful producer send does not always mean the business operation completed. Define when a message is acknowledged and how redelivery works. Consumers should be idempotent because messages can be delivered again after failures or uncertain acknowledgements.\n\n## Operational controls\n\nMonitor queue depth, oldest message age, poison messages, file arrival SLAs and acknowledgement delays. Build replay procedures that preserve the original business key and audit trail.\n\nThe key design question is not simply file versus queue; it is how the sender and receiver agree that work has been accepted, completed and reconciled."
+  },
+  {
+    id: "26",
+    title: "DataWeave Date and Time Formatting: Time Zones and Parsing",
+    slug: "dataweave-date-time-formatting-timezones-parsing",
+    excerpt: "Parse dates safely, format target values and avoid timezone shifts in integration payloads.",
+    category: "DataWeave",
+    published_at: "2026-11-10",
+    reading_minutes: 7,
+    content: "# DataWeave date and time formatting: time zones and parsing\n\nDate transformations can introduce subtle defects when source formats, timezone offsets and target expectations are not explicit. Treat a date-only value differently from a timestamp representing an instant.\n\n## Parse using the source format\n\n```dw\n%dw 2.0\noutput application/json\n---\n{\n  invoiceDate: (payload.invoiceDate as Date {format: \"dd/MM/yyyy\"})\n    as String {format: \"yyyy-MM-dd\"}\n}\n```\n\nThe input format must match the actual source value. Do not guess a format from one sample record.\n\n## Preserve timestamp meaning\n\nA DateTime with an offset represents a specific instant. Converting it to another timezone may change the displayed clock time while preserving that instant. Confirm whether the target expects UTC, a regional timezone or a local wall-clock value.\n\n## Handle invalid and missing values\n\nValidate required dates before transformation. Decide whether an invalid date should reject the record, route to an exception flow or use a documented fallback. Avoid silently replacing invalid business dates with the current date.\n\n## Test boundaries\n\nTest midnight, daylight-saving transitions where relevant, leap days, missing offsets, nulls and invalid strings. Compare the serialized output with the target contract and verify that no unintended timezone shift occurred."
+  },
+  {
+    id: "27",
+    title: "MuleSoft API Autodiscovery: Connect Runtime to API Manager",
+    slug: "mulesoft-api-autodiscovery-api-manager-setup",
+    excerpt: "Understand autodiscovery configuration and verify that a deployed API is governed by the intended API instance.",
+    category: "API Management",
+    published_at: "2026-11-10",
+    reading_minutes: 6,
+    content: "# MuleSoft API autodiscovery: connect runtime to API Manager\n\nAPI autodiscovery links a Mule application to an API instance managed in Anypoint Platform. This enables the managed API configuration and policies to be associated with the running application.\n\n## Create the API instance\n\nPublish or locate the API specification in Exchange and create the API instance in the intended environment. Record the API instance identifier and verify that it belongs to the correct business group and environment.\n\n## Configure the application\n\nAdd the autodiscovery configuration to the Mule application and provide the correct API instance identifier. Ensure the application has the required platform connectivity and permissions. Keep environment-specific identifiers in deployment configuration where supported.\n\n## Verify policy enforcement\n\nDeploy the application and inspect API Manager to confirm that the instance is connected. Apply a controlled test policy, such as a client access requirement, and verify both an allowed and a rejected request. Remove or adjust test settings after validation.\n\n## Troubleshooting\n\nCheck identifier mismatch, environment mismatch, connectivity, permissions and runtime logs. A successful application deployment does not prove autodiscovery succeeded.\n\nDocument the API instance, application, environment and policy owner so future changes can be traced."
+  },
+  {
+    id: "28",
+    title: "MuleSoft Retry Strategies: Until Successful, Backoff and Error Types",
+    slug: "mulesoft-retry-strategies-until-successful-backoff-errors",
+    excerpt: "Use bounded retries for transient failures without repeating non-idempotent business operations blindly.",
+    category: "Integration Patterns",
+    published_at: "2026-11-10",
+    reading_minutes: 8,
+    content: "# MuleSoft retry strategies: backoff and error classification\n\nRetries help recover from temporary failures, but an unsafe retry can amplify an outage or duplicate a business operation. Retry policy must follow error classification and idempotency design.\n\n## Classify the failure\n\nConnectivity resets, temporary service unavailability and throttling may be transient. Invalid input, missing permissions and unsupported operations are usually permanent until something changes. Do not retry every error indiscriminately.\n\n## Bound the retry budget\n\nChoose a maximum attempt count, delay and overall timeout that fit the caller's SLA. Exponential backoff with jitter can reduce synchronized retry storms when many clients fail together. Respect downstream Retry-After guidance where applicable.\n\n## Use Until Successful carefully\n\nMule's Until Successful scope retries its enclosed processors according to its configured policy. Understand which processors are repeated and what happens when the retry policy is exhausted. Avoid placing a non-idempotent create or payment operation inside a retry scope unless the target supports a stable idempotency key or duplicate check.\n\n## Test recovery behavior\n\nSimulate temporary failures followed by success, permanent failures, timeouts after downstream success and retry exhaustion. Verify logs, error types, response behavior and replay instructions.\n\nA retry is safe only when the repeated operation is safe or the integration can detect that the original operation already completed."
+  },
+  {
+    id: "29",
+    title: "MuleSoft API Pagination: Offset, Limit and Cursor Patterns",
+    slug: "mulesoft-api-pagination-offset-limit-cursor-patterns",
+    excerpt: "Design predictable pagination for large APIs and avoid unstable page boundaries.",
+    category: "API Design",
+    published_at: "2026-11-10",
+    reading_minutes: 7,
+    content: "# MuleSoft API pagination: offset, limit and cursor patterns\n\nPagination limits response size and gives clients a controlled way to traverse large collections. The right strategy depends on data volume, update frequency and the backend's query capabilities.\n\n## Offset and limit\n\nAn offset-based API accepts values such as `limit=50&offset=100`. Validate that limit is positive and cap it to a safe maximum. Apply a stable sort order so page boundaries are deterministic. Concurrent inserts or deletes can still cause records to shift between pages.\n\n## Cursor pagination\n\nA cursor represents a position in a stable ordering, often using a unique key or composite timestamp and ID. It can be more reliable for large or frequently changing datasets because the next page continues after the last observed record.\n\n## Response metadata\n\nReturn the requested page size and a next cursor or page indicator where appropriate. Do not expose internal database offsets or sensitive cursor contents. Sign or otherwise protect opaque cursors if clients could tamper with them.\n\n## Test cases\n\nTest empty results, invalid limits, maximum limits, duplicate sort values, concurrent updates and the final page. Ensure clients can stop when no next page is provided.\n\nPagination is part of the API contract; document its ordering, limits and consistency guarantees."
+  },
+  {
+    id: "30",
+    title: "MuleSoft API Security: OAuth Scopes, JWT Validation and TLS",
+    slug: "mulesoft-api-security-oauth-scopes-jwt-tls",
+    excerpt: "Apply layered API security with transport protection, token validation and least-privilege authorization.",
+    category: "Security",
+    published_at: "2026-11-10",
+    reading_minutes: 8,
+    content: "# MuleSoft API security: OAuth scopes, JWT validation and TLS\n\nAPI security is layered. TLS protects data in transit, token validation establishes trusted access context and authorization determines which operations a client may perform.\n\n## Protect transport\n\nRequire HTTPS for external API traffic and validate certificates for outbound TLS connections. Use approved cipher and certificate practices for the organization's platform and security standards.\n\n## Validate access tokens\n\nFor JWT-based access, validate the signature or trusted key source, issuer, audience and expiration. A token that can be decoded is not necessarily authentic. For opaque tokens, use the configured introspection or authorization mechanism.\n\n## Design narrow scopes\n\nSeparate read and write capabilities and avoid broad scopes that grant unrelated operations. Enforce business authorization as well as API-level access: a valid token should not automatically grant access to every customer or account.\n\n## Protect secrets and logs\n\nStore client secrets securely, rotate keys and credentials, and never log bearer tokens. Keep error responses useful without exposing internal security configuration.\n\n## Security verification\n\nTest missing, malformed, expired, wrong-audience and insufficient-scope tokens. Include valid access and unauthorized resource access. Review policy configuration after every environment promotion."
+  },
+  {
+    id: "31",
+    title: "MuleSoft Production Support: Incident Triage, RCA and SLA",
+    slug: "mulesoft-production-support-incident-triage-rca-sla",
+    excerpt: "Follow a repeatable L2/L3 approach to triage Mule application incidents and prevent recurrence.",
+    category: "Production Support",
+    published_at: "2026-11-10",
+    reading_minutes: 8,
+    content: "# MuleSoft production support: incident triage, RCA and SLA\n\nProduction support combines technical diagnosis with clear communication and controlled recovery. The objective is to restore service safely, understand the impact and prevent the same failure from recurring.\n\n## Establish impact\n\nConfirm the affected API or integration, environment, start time, business function and number of impacted transactions. Check the incident priority and SLA with the service desk process. Avoid changing production before understanding the scope.\n\n## Triage with evidence\n\nReview Runtime Manager health, deployment history, platform alerts and application logs. Search by correlation ID and identify the first failing processor or dependency. Compare a failing request with a successful one. Check recent changes, database connectivity, queue depth, SFTP availability and downstream response times as relevant.\n\n## Mitigate safely\n\nFollow the approved runbook for restart, rollback, replay or failover. Consider in-flight messages and duplicate processing before retrying. Communicate the mitigation, owner and next update time to stakeholders.\n\n## Root cause analysis\n\nRecord the trigger, technical cause, contributing conditions, detection gap and recovery steps. Separate the symptom from the root cause. Attach relevant log references and timestamps without including secrets or unnecessary personal data.\n\n## Prevent recurrence\n\nCreate concrete actions such as a regression test, timeout adjustment, alert, capacity change, retry correction or runbook update. Assign an owner and due date. Close the incident only after service health and business processing are validated."
+  },
+  {
     id: "32",
     title: "MuleSoft API Autodiscovery: Connect an API to API Manager",
     slug: "mulesoft-api-autodiscovery-api-manager",
